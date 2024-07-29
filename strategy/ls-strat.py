@@ -3,7 +3,7 @@ import yfinance as yf
 import numpy as np
 from numba import jit, prange
 from datetime import datetime
-from datetime import datetime
+import time
 
 tickers = ['AAPL', 'ACN', 'ADI', 'ADP', 'ADSK', 'ANSS', 'APH', 'BABA', 'BIDU', 'BR', 'CRM',
            'FFIV', 'FIS', 'FISV', 'GOOG', 'GPN', 'IBM', 'INTC', 'INTU', 'IPGP', 'IT', 'JKHY', 
@@ -12,7 +12,15 @@ tickers = ['AAPL', 'ACN', 'ADI', 'ADP', 'ADSK', 'ANSS', 'APH', 'BABA', 'BIDU', '
 
 data = yf.download(tickers, '2018-01-01', datetime.today().strftime('%Y-%m-%d'))['Adj Close']
 
-data.to_csv('~/Downloads/data.csv')
+def days_between_dates(dt1, dt2):
+    date_format = "%Y-%m-%d"
+    a = time.mktime(time.strptime(dt1, date_format))
+    b = time.mktime(time.strptime(dt2, date_format))
+    delta = b - a
+    return int(delta / 86400)
+
+days = days_between_dates('2018-01-01', datetime.today().strftime('%Y-%m-%d'))
+
 daily_stock_returns = (data - data.shift(1)) / data.shift(1)
 daily_stock_returns.dropna(inplace=True)
 
@@ -40,7 +48,7 @@ def generate_signals(rank_matrix, threshold):
                 signal_matrix[i, j] = -1
     return signal_matrix
 
-signal_matrix = generate_signals(rank_matrix, 22)
+signal_matrix = generate_signals(rank_matrix, data.shape[1]-1)
 
 # Calculating returns based on trade signals
 @jit(nopython=True, parallel=True)
@@ -62,8 +70,8 @@ if strategy_returns.size > 0:
     # Sharpe Ratio
     # Assuming risk-free rate as 0 for simplicity
     daily_rf_rate = 0
-    annual_rf_rate = daily_rf_rate * 252
-    strategy_volatility = np.std(strategy_returns) * np.sqrt(252)
+    annual_rf_rate = daily_rf_rate * days
+    strategy_volatility = np.std(strategy_returns) * np.sqrt(days)
     sharpe_ratio = (np.mean(strategy_returns) - annual_rf_rate) / strategy_volatility
 
     # Drawdown
