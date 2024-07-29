@@ -12,7 +12,7 @@ using namespace std;
 
 class DataFrame {
 public:
-    vector<vector<double>> data;
+    vector<vector<double> > data;
     vector<string> headers;
 
     void addRow(const vector<double>& row) {
@@ -75,13 +75,13 @@ void readCSV(const string& filename, DataFrame& df) {
     file.close();
 }
 
-vector<vector<double>> calculateDailyReturns(const DataFrame& df) {
+vector<vector<double> > calculateDailyReturns(const DataFrame& df) {
     int rows = df.data.size();
     if (rows <= 1) {
-        return vector<vector<double>>(); // Return an empty vector if not enough data
+        return vector<vector<double> >(); // Return an empty vector if not enough data
     }
     int cols = df.data[0].size();
-    vector<vector<double>> daily_returns(rows - 1, vector<double>(cols));
+    vector<vector<double> > daily_returns(rows - 1, vector<double>(cols));
 
     for (int i = 1; i < rows; ++i) {
         for (int j = 0; j < cols; ++j) {
@@ -96,20 +96,20 @@ vector<vector<double>> calculateDailyReturns(const DataFrame& df) {
     return daily_returns;
 }
 
-vector<vector<int>> rankData(const vector<vector<double>>& daily_returns) {
+vector<vector<int> > rankData(const vector<vector<double> >& daily_returns) {
     int rows = daily_returns.size();
     if (rows == 0) {
-        return vector<vector<int>>(); // Return an empty vector if no data
+        return vector<vector<int> >(); // Return an empty vector if no data
     }
     int cols = daily_returns[0].size();
-    vector<vector<int>> rank_matrix(rows, vector<int>(cols));
+    vector<vector<int> > rank_matrix(rows, vector<int>(cols));
 
     for (int i = 0; i < rows; ++i) {
-        vector<pair<double, int>> daily_returns_with_index(cols);
+        vector<pair<double, int> > daily_returns_with_index(cols);
         for (int j = 0; j < cols; ++j) {
             daily_returns_with_index[j] = make_pair(daily_returns[i][j], j);
         }
-        sort(daily_returns_with_index.begin(), daily_returns_with_index.end(), greater<pair<double, int>>());
+        sort(daily_returns_with_index.begin(), daily_returns_with_index.end(), greater<pair<double, int> >());
 
         for (int j = 0; j < cols; ++j) {
             rank_matrix[i][daily_returns_with_index[j].second] = j + 1;
@@ -119,13 +119,13 @@ vector<vector<int>> rankData(const vector<vector<double>>& daily_returns) {
     return rank_matrix;
 }
 
-vector<vector<int>> generateSignals(const vector<vector<int>>& rank_matrix, int threshold) {
+vector<vector<int> > generateSignals(const vector<vector<int> >& rank_matrix, int threshold) {
     int rows = rank_matrix.size();
     if (rows == 0) {
-        return vector<vector<int>>(); // Return an empty vector if no data
+        return vector<vector<int> >(); // Return an empty vector if no data
     }
     int cols = rank_matrix[0].size();
-    vector<vector<int>> signal_matrix(rows, vector<int>(cols, 1));
+    vector<vector<int> > signal_matrix(rows, vector<int>(cols, 1));
 
     for (int i = 0; i < rows; ++i) {
         for (int j = 0; j < cols; ++j) {
@@ -138,13 +138,13 @@ vector<vector<int>> generateSignals(const vector<vector<int>>& rank_matrix, int 
     return signal_matrix;
 }
 
-vector<vector<double>> calculateReturns(const vector<vector<int>>& signal_matrix, const vector<vector<double>>& daily_returns) {
+vector<vector<double> > calculateReturns(const vector<vector<int> >& signal_matrix, const vector<vector<double> >& daily_returns) {
     int rows = signal_matrix.size();
     if (rows == 0) {
-        return vector<vector<double>>(); // Return an empty vector if no data
+        return vector<vector<double> >(); // Return an empty vector if no data
     }
     int cols = signal_matrix[0].size();
-    vector<vector<double>> returns_matrix(rows, vector<double>(cols));
+    vector<vector<double> > returns_matrix(rows, vector<double>(cols));
 
     for (int i = 0; i < rows - 1; ++i) {
         for (int j = 0; j < cols; ++j) {
@@ -160,13 +160,13 @@ int main() {
     DataFrame df;
     readCSV(filename, df);
 
-    vector<vector<double>> daily_returns = calculateDailyReturns(df);
-    vector<vector<int>> rank_matrix = rankData(daily_returns);
+    vector<vector<double> > daily_returns = calculateDailyReturns(df);
+    vector<vector<int> > rank_matrix = rankData(daily_returns);
 
     int threshold = 38; // Given the number of stocks @todo change to dynamic based on .size()-1
-    vector<vector<int>> signal_matrix = generateSignals(rank_matrix, threshold);
+    vector<vector<int> > signal_matrix = generateSignals(rank_matrix, threshold);
 
-    vector<vector<double>> returns_matrix = calculateReturns(signal_matrix, daily_returns);
+    vector<vector<double> > returns_matrix = calculateReturns(signal_matrix, daily_returns);
 
     int num_tickers = df.headers.size();
     vector<double> strategy_returns(returns_matrix.size());
