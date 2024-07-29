@@ -11,6 +11,8 @@ tickers = ['AAPL', 'ACN', 'ADI', 'ADP', 'ADSK', 'ANSS', 'APH', 'BABA', 'BIDU', '
            'TEL', 'TTWO', 'TXN', 'V', 'VRSN']
 
 data = yf.download(tickers, '2018-01-01', datetime.today().strftime('%Y-%m-%d'))['Adj Close']
+
+data.to_csv('~/Downloads/data.csv')
 daily_stock_returns = (data - data.shift(1)) / data.shift(1)
 daily_stock_returns.dropna(inplace=True)
 
