@@ -37,24 +37,34 @@ cursor.execute('''
 
 # Insert data into the table
 for ticker in tickers:
+    # Extract data for the ticker
     ticker_data = data['Adj Close'][ticker].dropna().reset_index()
     ticker_data.columns = ['Date', 'Adj_Close']
-    ticker_data['Open'] = data['Open'][ticker].reindex(ticker_data['Date']).values
-    ticker_data['High'] = data['High'][ticker].reindex(ticker_data['Date']).values
-    ticker_data['Low'] = data['Low'][ticker].reindex(ticker_data['Date']).values
-    ticker_data['Close'] = data['Close'][ticker].reindex(ticker_data['Date']).values
-    ticker_data['Volume'] = data['Volume'][ticker].reindex(ticker_data['Date']).values
+    
+    # Ensure the date is in the same format and index
+    ticker_data = ticker_data.set_index('Date')
+    
+    # Create a DataFrame with all relevant columns
+    ticker_data['Open'] = data['Open'][ticker].reindex(ticker_data.index).values
+    ticker_data['High'] = data['High'][ticker].reindex(ticker_data.index).values
+    ticker_data['Low'] = data['Low'][ticker].reindex(ticker_data.index).values
+    ticker_data['Close'] = data['Close'][ticker].reindex(ticker_data.index).values
+    ticker_data['Volume'] = data['Volume'][ticker].reindex(ticker_data.index).values
     ticker_data['Ticker'] = ticker  # Add ticker column
     
-    # Convert 'Date' to string format
-    ticker_data['Date'] = ticker_data['Date'].astype(str)
+    # Convert 'Date' to string format and reset index
+    ticker_data['Date'] = ticker_data.index.astype(str)
+    ticker_data.reset_index(drop=True, inplace=True)
+    
+    # Reorder columns to match the table schema
+    ticker_data = ticker_data[['Ticker', 'Date', 'Open', 'High', 'Low', 'Close', 'Adj_Close', 'Volume']]
     
     # Insert rows into the table
     for row in ticker_data.itertuples(index=False):
         cursor.execute('''
-            INSERT INTO stock_data (Ticker, Date, High, Low, Close, Adj_Close, Volume) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ''', (row.Ticker, row.Date, row.High, row.Low, row.Close, row.Adj_Close, row.Volume))
+            INSERT INTO stock_data (Ticker, Date, Open, High, Low, Close, Adj_Close, Volume) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (row.Ticker, row.Date, row.Open, row.High, row.Low, row.Close, row.Adj_Close, row.Volume))
 
 # Commit and close the connection
 conn.commit()

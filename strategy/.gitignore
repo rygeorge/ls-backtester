@@ -5,4 +5,4 @@
 !.gitignore
 !.cpp
 !.py
-!.ipynb
+!*.ipynb
