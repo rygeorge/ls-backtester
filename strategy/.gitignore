@@ -1,4 +1,7 @@
 # Ignore all binary files 
 *.out
 *.exe
-ls-strat
+*
+!.gitignore
+!.cpp
+!.py
