@@ -1,8 +1,5 @@
 # Ignore all binary files 
-*.out
-*.exe
-*
-!.gitignore
-!.cpp
-!.py
+!*.py
 !*.ipynb
+!*.cpp
+ls-strat
